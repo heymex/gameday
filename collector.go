@@ -293,7 +293,7 @@ func main() {
 
 	addr := envOr("LISTEN_ADDR", ":8080")
 	http.HandleFunc("/api/data", c.handleData)
-	http.Handle("/", http.FileServer(http.Dir("./web"))) // drop index.html + uPlot here
+	http.Handle("/", http.FileServer(http.Dir("./web")))
 	log.Printf("listening on %s  (GET /api/data)", addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
 }

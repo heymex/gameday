@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>gameday</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uplot@1.6.32/dist/uPlot.min.css" />
+  <style>
+    :root {
+      --bg: #e8eef2;
+      --ink: #152028;
+      --muted: #4d5d6b;
+      --panel: #f7fafc;
+      --line: #c5d0da;
+      --baseline: #1f7a4d;
+      --total: #1d4f91;
+      --other: #c45c26;
+      --ok: #1f7a4d;
+      --bad: #a33b2b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "IBM Plex Sans", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 70% 45% at 100% -10%, #cfe0ea 0%, transparent 55%),
+        radial-gradient(ellipse 50% 40% at -5% 110%, #d5e4d8 0%, transparent 50%),
+        var(--bg);
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.75rem 1.5rem;
+      padding: 1.25rem 1.5rem 0.75rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .tagline {
+      margin: 0.15rem 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .status {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.25rem;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .status strong {
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .dot {
+      width: 0.55rem;
+      height: 0.55rem;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+
+    .dot.live { background: var(--ok); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 25%, transparent); }
+    .dot.err  { background: var(--bad); }
+
+    main {
+      display: grid;
+      gap: 1.25rem;
+      padding: 1.25rem 1.5rem 2rem;
+    }
+
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      padding: 1rem 1rem 0.5rem;
+    }
+
+    section h2 {
+      margin: 0 0 0.35rem;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    section p {
+      margin: 0 0 0.75rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .chart {
+      width: 100%;
+      min-height: 260px;
+    }
+
+    .empty {
+      display: grid;
+      place-items: center;
+      min-height: 260px;
+      color: var(--muted);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.85rem;
+    }
+
+    .uplot {
+      font-family: "IBM Plex Sans", sans-serif;
+    }
+
+    .u-legend {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.75rem;
+    }
+
+    @media (min-width: 960px) {
+      main { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>gameday</h1>
+      <p class="tagline">Broadcast baseline vs uplink contention</p>
+    </div>
+    <div class="status" aria-live="polite">
+      <span class="pill"><span id="status-dot" class="dot"></span><strong id="status-text">connecting</strong></span>
+      <span>updated <strong id="updated">—</strong></span>
+      <span>samples <strong id="samples">0</strong></span>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>Dist → Core</h2>
+      <p>Port-channel toward core. Rising “other” means non-broadcast load on this hop.</p>
+      <div id="chart-dist" class="chart"><div class="empty">waiting for samples…</div></div>
+    </section>
+    <section>
+      <h2>DMZ → ISP</h2>
+      <p>Edge upload toward the ISP. Same baseline subtracted from the link total.</p>
+      <div id="chart-dmz" class="chart"><div class="empty">waiting for samples…</div></div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/uplot@1.6.32/dist/uPlot.iife.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

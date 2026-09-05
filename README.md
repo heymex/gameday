@@ -28,7 +28,7 @@ go build -o gameday .
 ./gameday
 ```
 
-Open `http://localhost:8080` once you drop a UI under `./web` (serves static files). Metrics are always at `GET /api/data`.
+Open `http://localhost:8080` for the live charts (static UI in `./web`, polls `/api/data` every 2s).
 
 ## Configuration
 
@@ -62,4 +62,4 @@ Samples are on a shared 2s tick (~30 minutes of ring history). Ticks without a v
 
 - Uses IF-MIB 64-bit `ifHCInOctets` / `ifHCOutOctets` only (32-bit counters wrap too fast on gigabit links).
 - SNMPv2c today; `newPoller` in `collector.go` notes where v3 USM plugs in.
-- Skeleton: collector + JSON API. Drop `index.html` + uPlot under `./web` for a chart.
+- UI in `./web` uses uPlot (CDN) with two charts: dist→core and DMZ→ISP, each showing baseline, link total, and other.

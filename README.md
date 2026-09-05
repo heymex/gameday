@@ -47,10 +47,10 @@ Copy `.env.example` to `.env` (gitignored). Existing environment variables win o
 | Variable | Required | Description |
 | --- | --- | --- |
 | `SNMP_COMMUNITY` | yes\* | Shared SNMPv2c community |
-| `BASELINE_HOST` / `BASELINE_IFINDEX` | yes | Closet access port (stream ingress) |
+| `BASELINE_HOST` / `BASELINE_IFINDEX` | yes | Closet access port (broadcast contribution) |
 | `DIST_CORE_HOST` / `DIST_CORE_IFINDEX` | yes | Dist → core Port-channel |
 | `DMZ_ISP_HOST` / `DMZ_ISP_IFINDEX` | yes | DMZ → ISP Port-channel |
-| `*_DIR` | no | `in` or `out` (defaults: baseline `in`, others `out`) |
+| `*_DIR` | no | `in` or `out` (defaults: baseline `out`, others `out`) |
 | `*_COMMUNITY` | no | Per-series community override |
 | `LISTEN_ADDR` | no | HTTP listen address (default `:8080`) |
 

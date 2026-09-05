@@ -31,6 +31,16 @@
     return bps.toFixed(0) + " bps";
   }
 
+  // Compact axis labels — full "21.00 Mbps" was clipped to ".00 Mbps".
+  function fmtBpsAxis(bps) {
+    if (bps == null || Number.isNaN(bps)) return "";
+    const abs = Math.abs(bps);
+    if (abs >= 1e9) return (bps / 1e9).toFixed(1) + "G";
+    if (abs >= 1e6) return (bps / 1e6).toFixed(0) + "M";
+    if (abs >= 1e3) return (bps / 1e3).toFixed(0) + "k";
+    return String(Math.round(bps));
+  }
+
   function fmtTime(ts) {
     return new Date(ts * 1000).toLocaleTimeString([], {
       hour: "2-digit",
@@ -72,8 +82,8 @@
           stroke: "#4d5d6b",
           grid: { stroke: "#d5dee6" },
           ticks: { stroke: "#c5d0da" },
-          size: 64,
-          values: (_u, splits) => splits.map((v) => fmtBps(v)),
+          size: 56,
+          values: (_u, splits) => splits.map((v) => fmtBpsAxis(v)),
         },
       ],
       series: [

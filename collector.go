@@ -2,7 +2,7 @@
 //
 // Live-event path (upload toward the ISP):
 //
-//	broadcast gear → dumb switch → closet access port (baseline)
+//	broadcast gear → dumb switch → closet access port (baseline, typically out)
 //	  → closet → dist ⇄ core ⇄ DMZ/edge ⇄ ISP
 //
 // Polls HC octet counters on a shared tick, converts to bits/sec, and derives

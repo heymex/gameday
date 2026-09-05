@@ -112,7 +112,7 @@ func seriesFromEnv(name, prefix, defaultDir string) (Series, error) {
 // loadSeries reads the three measurement points from the environment.
 // Topology (hosts / ifIndexes) and credentials never live in source.
 func loadSeries() ([]Series, error) {
-	baseline, err := seriesFromEnv("baseline", "BASELINE", "in")
+	baseline, err := seriesFromEnv("baseline", "BASELINE", "out")
 	if err != nil {
 		return nil, err
 	}

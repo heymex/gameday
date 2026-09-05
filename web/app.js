@@ -92,14 +92,14 @@
       },
       axes: [
         {
-          stroke: "#4d5d6b",
-          grid: { stroke: "#d5dee6" },
-          ticks: { stroke: "#c5d0da" },
+          stroke: "#8b9aab",
+          grid: { stroke: "#1c242c" },
+          ticks: { stroke: "#2a3440" },
         },
         {
-          stroke: "#4d5d6b",
-          grid: { stroke: "#d5dee6" },
-          ticks: { stroke: "#c5d0da" },
+          stroke: "#8b9aab",
+          grid: { stroke: "#1c242c" },
+          ticks: { stroke: "#2a3440" },
           size: 56,
           values: (_u, splits) => splits.map((v) => fmtBpsAxis(v)),
         },
@@ -107,9 +107,9 @@
       series: [
         {},
         // Emphasize "other" — that's the question this page answers.
-        seriesOpts("other (non-broadcast)", "#c45c26", 2.5, "rgba(196, 92, 38, 0.18)"),
-        seriesOpts("link total", "#1d4f91", 1.5),
-        seriesOpts("broadcast baseline", "#1f7a4d", 1.5),
+        seriesOpts("other (non-broadcast)", "#e8904e", 2.5, "rgba(232, 144, 78, 0.22)"),
+        seriesOpts("link total", "#6aa8ff", 1.5),
+        seriesOpts("broadcast baseline", "#3dba74", 1.5),
       ],
       legend: { live: true },
     };

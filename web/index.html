@@ -10,16 +10,17 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uplot@1.6.32/dist/uPlot.min.css" />
   <style>
     :root {
-      --bg: #e8eef2;
-      --ink: #152028;
-      --muted: #4d5d6b;
-      --panel: #f7fafc;
-      --line: #c5d0da;
-      --baseline: #1f7a4d;
-      --total: #1d4f91;
-      --other: #c45c26;
-      --ok: #1f7a4d;
-      --bad: #a33b2b;
+      color-scheme: dark;
+      --bg: #0b0e11;
+      --ink: #e6edf2;
+      --muted: #8b9aab;
+      --panel: #12171c;
+      --line: #2a3440;
+      --baseline: #3dba74;
+      --total: #6aa8ff;
+      --other: #e8904e;
+      --ok: #3dba74;
+      --bad: #e06a5c;
     }
 
     * { box-sizing: border-box; }
@@ -29,10 +30,7 @@
       min-height: 100vh;
       font-family: "IBM Plex Sans", sans-serif;
       color: var(--ink);
-      background:
-        radial-gradient(ellipse 70% 45% at 100% -10%, #cfe0ea 0%, transparent 55%),
-        radial-gradient(ellipse 50% 40% at -5% 110%, #d5e4d8 0%, transparent 50%),
-        var(--bg);
+      background: var(--bg);
     }
 
     header {
@@ -166,7 +164,8 @@
     }
 
     .uplot { font-family: "IBM Plex Sans", sans-serif; }
-    .u-legend { font-family: "IBM Plex Mono", monospace; font-size: 0.75rem; }
+    .u-legend { font-family: "IBM Plex Mono", monospace; font-size: 0.75rem; color: var(--muted); }
+    .u-legend .u-value { color: var(--ink); }
 
     @media (max-width: 720px) {
       .kpis { grid-template-columns: 1fr; }

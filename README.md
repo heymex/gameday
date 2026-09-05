@@ -72,4 +72,5 @@ Samples are on a shared 2s tick (~30 minutes of ring history). Ticks without a v
 
 - Uses IF-MIB 64-bit `ifHCInOctets` / `ifHCOutOctets` only (32-bit counters wrap too fast on gigabit links).
 - SNMPv2c today; `newPoller` in `collector.go` notes where v3 USM plugs in.
-- UI in `./web` uses uPlot (CDN) with two charts: dist→core and DMZ→ISP, each showing baseline, link total, and other.
+- UI in `./web` uses uPlot with KPI averages plus charts that emphasize non-broadcast (“other”) traffic on dist→core and DMZ→ISP.
+- Poller holds the last good rate when a device’s IF-MIB counters have not advanced yet (common on switches that refresh every few seconds), so you do not get fake zero/spike sawtooths.

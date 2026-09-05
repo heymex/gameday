@@ -1,6 +1,7 @@
 (() => {
   const POLL_MS = 2000;
   const API = "/api/data";
+  const KPI_WINDOW_SEC = 15;
 
   // API columns: [x, baseline, dist_core, dist_core_other, dmz_isp, dmz_isp_other]
   const COL = {
@@ -21,17 +22,19 @@
   const statusText = document.getElementById("status-text");
   const updatedEl = document.getElementById("updated");
   const samplesEl = document.getElementById("samples");
+  const kpiBaseline = document.getElementById("kpi-baseline");
+  const kpiDistOther = document.getElementById("kpi-dist-other");
+  const kpiDmzOther = document.getElementById("kpi-dmz-other");
 
   function fmtBps(bps) {
     if (bps == null || Number.isNaN(bps)) return "—";
     const abs = Math.abs(bps);
     if (abs >= 1e9) return (bps / 1e9).toFixed(2) + " Gbps";
-    if (abs >= 1e6) return (bps / 1e6).toFixed(2) + " Mbps";
-    if (abs >= 1e3) return (bps / 1e3).toFixed(1) + " kbps";
+    if (abs >= 1e6) return (bps / 1e6).toFixed(1) + " Mbps";
+    if (abs >= 1e3) return (bps / 1e3).toFixed(0) + " kbps";
     return bps.toFixed(0) + " bps";
   }
 
-  // Compact axis labels — full "21.00 Mbps" was clipped to ".00 Mbps".
   function fmtBpsAxis(bps) {
     if (bps == null || Number.isNaN(bps)) return "";
     const abs = Math.abs(bps);
@@ -49,25 +52,40 @@
     });
   }
 
-  function seriesOpts(label, stroke, width = 2) {
-    return {
+  function avgTail(col, x, windowSec) {
+    if (!col?.length) return null;
+    const tEnd = x[x.length - 1];
+    let sum = 0;
+    let n = 0;
+    for (let i = col.length - 1; i >= 0; i--) {
+      if (tEnd - x[i] > windowSec) break;
+      sum += col[i];
+      n++;
+    }
+    return n ? sum / n : null;
+  }
+
+  function seriesOpts(label, stroke, width, fill) {
+    const s = {
       label,
       stroke,
       width,
       value: (_u, v) => fmtBps(v),
     };
+    if (fill) s.fill = fill;
+    return s;
   }
 
-  function makeOpts(titleHint) {
+  function makeOpts() {
     return {
       width: 100,
-      height: 260,
+      height: 280,
       cursor: { drag: { x: false, y: false } },
       scales: {
         x: { time: true },
         y: {
           range: (_u, min, max) => {
-            const hi = Math.max(max, min * 1.05, 1e6);
+            const hi = Math.max(max, 5e6);
             return [0, hi * 1.08];
           },
         },
@@ -88,9 +106,10 @@
       ],
       series: [
         {},
-        seriesOpts("baseline", "#1f7a4d", 2),
-        seriesOpts(titleHint + " total", "#1d4f91", 2),
-        seriesOpts("other", "#c45c26", 2.5),
+        // Emphasize "other" — that's the question this page answers.
+        seriesOpts("other (non-broadcast)", "#c45c26", 2.5, "rgba(196, 92, 38, 0.18)"),
+        seriesOpts("link total", "#1d4f91", 1.5),
+        seriesOpts("broadcast baseline", "#1f7a4d", 1.5),
       ],
       legend: { live: true },
     };
@@ -100,12 +119,12 @@
     return Math.max(320, el.clientWidth || el.parentElement.clientWidth || 640);
   }
 
-  function ensurePlot(key, hint) {
+  function ensurePlot(key) {
     const slot = charts[key];
     if (slot.plot) return slot.plot;
     slot.el.innerHTML = "";
-    slot.plot = new uPlot(makeOpts(hint), [[], [], [], []], slot.el);
-    slot.plot.setSize({ width: chartWidth(slot.el), height: 260 });
+    slot.plot = new uPlot(makeOpts(), [[], [], [], []], slot.el);
+    slot.plot.setSize({ width: chartWidth(slot.el), height: 280 });
     return slot.plot;
   }
 
@@ -124,11 +143,13 @@
 
     const x = raw[COL.x];
     const baseline = raw[COL.baseline];
-    const distData = [x, baseline, raw[COL.distTotal], raw[COL.distOther]];
-    const dmzData = [x, baseline, raw[COL.dmzTotal], raw[COL.dmzOther]];
+    // Chart order: other, total, baseline — other first so it draws underneath fills clearly.
+    ensurePlot("dist").setData([x, raw[COL.distOther], raw[COL.distTotal], baseline]);
+    ensurePlot("dmz").setData([x, raw[COL.dmzOther], raw[COL.dmzTotal], baseline]);
 
-    ensurePlot("dist", "dist→core").setData(distData);
-    ensurePlot("dmz", "dmz→isp").setData(dmzData);
+    kpiBaseline.textContent = fmtBps(avgTail(baseline, x, KPI_WINDOW_SEC));
+    kpiDistOther.textContent = fmtBps(avgTail(raw[COL.distOther], x, KPI_WINDOW_SEC));
+    kpiDmzOther.textContent = fmtBps(avgTail(raw[COL.dmzOther], x, KPI_WINDOW_SEC));
 
     samplesEl.textContent = String(x.length);
     updatedEl.textContent = fmtTime(x[x.length - 1]);
@@ -149,7 +170,7 @@
   function resize() {
     for (const slot of Object.values(charts)) {
       if (!slot.plot) continue;
-      slot.plot.setSize({ width: chartWidth(slot.el), height: 260 });
+      slot.plot.setSize({ width: chartWidth(slot.el), height: 280 });
     }
   }
 

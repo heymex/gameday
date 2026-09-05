@@ -133,6 +133,8 @@ type poller struct {
 	conn     *gosnmp.GoSNMP
 	lastCtr  uint64
 	lastTime time.Time
+	lastBps  float64
+	hasRate  bool
 	primed   bool
 }
 
@@ -151,30 +153,43 @@ func newPoller(s Series) (*poller, error) {
 	return &poller{s: s, conn: g}, nil
 }
 
-// poll reads the counter and converts to bits/sec using the previous read.
-// It returns ok=false for the first (priming) read, on any SNMP error, and on
-// a counter reset — where cur < prev, meaning the device rebooted (a genuine
-// 64-bit wrap takes years at line rate). In every not-ok case the spike is
-// discarded rather than plotted.
+// poll reads the counter and converts to bits/sec using the previous *change*.
+// Many switches refresh IF-MIB counters every several seconds; polling faster
+// than that used to emit fake 0 bps samples and then spike the whole delta into
+// a single 2s window. When the counter is unchanged we hold the last good rate
+// and keep lastTime so the next advance is amortized over the full gap.
 func (p *poller) poll(now time.Time) (float64, bool) {
 	res, err := p.conn.Get([]string{p.s.oid()})
 	if err != nil || len(res.Variables) == 0 {
-		p.primed = false // re-prime cleanly after a gap
+		p.primed = false
+		p.hasRate = false
 		return 0, false
 	}
 	cur := gosnmp.ToBigInt(res.Variables[0].Value).Uint64()
 
-	prevCtr, prevTime, primed := p.lastCtr, p.lastTime, p.primed
-	p.lastCtr, p.lastTime, p.primed = cur, now, true
-
-	if !primed || cur < prevCtr {
+	if !p.primed {
+		p.lastCtr, p.lastTime, p.primed = cur, now, true
 		return 0, false
 	}
-	dt := now.Sub(prevTime).Seconds()
+	if cur < p.lastCtr {
+		// Device reboot / counter reset — re-prime.
+		p.lastCtr, p.lastTime, p.hasRate = cur, now, false
+		return 0, false
+	}
+	if cur == p.lastCtr {
+		if p.hasRate {
+			return p.lastBps, true
+		}
+		return 0, false
+	}
+
+	dt := now.Sub(p.lastTime).Seconds()
 	if dt <= 0 {
 		return 0, false
 	}
-	return float64(cur-prevCtr) * 8 / dt, true
+	bps := float64(cur-p.lastCtr) * 8 / dt
+	p.lastCtr, p.lastTime, p.lastBps, p.hasRate = cur, now, bps, true
+	return bps, true
 }
 
 // --- collector ------------------------------------------------------------
@@ -231,7 +246,7 @@ func (c *Collector) handleData(w http.ResponseWriter, r *http.Request) {
 			}
 			rw := rows[s.Tick]
 			if rw == nil {
-				rw = &row{t: float64(s.T.Unix()), vals: map[string]float64{}}
+				rw = &row{t: float64(s.T.UnixMilli()) / 1000, vals: map[string]float64{}}
 				rows[s.Tick] = rw
 			}
 			rw.vals[name] = s.Bps

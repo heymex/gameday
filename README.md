@@ -30,6 +30,16 @@ go build -o gameday .
 
 Open `http://localhost:8080` for the live charts (static UI in `./web`, polls `/api/data` every 2s).
 
+### Dump interface indexes
+
+If you are unsure which `*_IFINDEX` values to use:
+
+```bash
+go run ./cmd/iftable
+```
+
+Walks IF-MIB on each unique host from `.env` and prints ifIndex / ifName / ifAlias / oper / speed. Rows matching your configured indexes are marked with `->`.
+
 ## Configuration
 
 Copy `.env.example` to `.env` (gitignored). Existing environment variables win over `.env`.
